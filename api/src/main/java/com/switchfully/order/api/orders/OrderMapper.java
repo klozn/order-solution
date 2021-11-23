@@ -7,6 +7,7 @@ import com.switchfully.order.api.orders.dtos.OrderCreationDto;
 import com.switchfully.order.api.orders.dtos.OrderDto;
 import com.switchfully.order.api.orders.dtos.reports.OrdersReportDto;
 import com.switchfully.order.api.orders.dtos.reports.SingleOrderReportDto;
+import com.switchfully.order.domain.customers.Customer;
 import com.switchfully.order.domain.customers.addresses.Address;
 import com.switchfully.order.domain.orders.Order;
 import com.switchfully.order.service.customers.CustomerService;
@@ -35,9 +36,9 @@ public class OrderMapper {
         return new OrderDto()
                 .withOrderId(order.getId().toString())
                 .withItemGroups(order.getOrderItems().stream()
-                        .map(orderItem -> orderItemMapper.toDto(orderItem))
+                        .map(orderItemMapper::toDto)
                         .toArray(ItemGroupDto[]::new))
-                .withAddress(addressMapper.toDto(getAddressForCustomer(order.getCustomerId())));
+                .withAddress(addressMapper.toDto(getAddressForCustomer(order.getCustomer().getId())));
     }
 
     private Address getAddressForCustomer(UUID customerId) {
@@ -45,10 +46,11 @@ public class OrderMapper {
     }
 
     public Order toDomain(OrderCreationDto orderCreationDto) {
+        Customer customer = customerService.getCustomer(UUID.fromString(orderCreationDto.getCustomerId()));
         return order()
-                .withCustomerId(UUID.fromString(orderCreationDto.getCustomerId()))
+                .withCustomer(customer)
                 .withOrderItems(orderCreationDto.getItemGroups().stream()
-                        .map(itemGroup -> orderItemMapper.toDomain(itemGroup))
+                        .map(orderItemMapper::toDomain)
                         .collect(Collectors.toList()))
                 .build();
     }
@@ -66,14 +68,14 @@ public class OrderMapper {
                         .collect(Collectors.toList()))
                 .withTotalPriceOfAllOrders(orders.stream()
                         .map(order -> order.getTotalPrice().getAmountAsFloat())
-                        .reduce(0f, (totalPrice1, totalPrice2) -> totalPrice1 + totalPrice2));
+                        .reduce(0f, Float::sum));
     }
 
     private SingleOrderReportDto toSingleOrderReportDto(Order order) {
         return new SingleOrderReportDto()
                 .withOrderId(order.getId().toString())
                 .withItemGroups(order.getOrderItems().stream()
-                        .map(orderItem -> orderItemMapper.toItemGroupReportDto(orderItem))
+                        .map(orderItemMapper::toItemGroupReportDto)
                         .collect(Collectors.toList()));
     }
 }

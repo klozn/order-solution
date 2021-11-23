@@ -19,7 +19,7 @@ public class OrderValidator extends EntityValidator<Order> {
     @Override
     protected boolean isAFieldEmptyOrNull(Order order) {
         return isNull(order)
-                || isNull(order.getCustomerId())
+                || isNull(order.getCustomer())
                 || order.getOrderItems().size() < 1
                 || isAnOrderItemInvalid(order.getOrderItems());
     }

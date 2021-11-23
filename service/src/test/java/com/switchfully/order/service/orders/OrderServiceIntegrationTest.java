@@ -8,10 +8,10 @@ import com.switchfully.order.domain.items.ItemRepository;
 import com.switchfully.order.domain.items.prices.Price;
 import com.switchfully.order.domain.orders.Order;
 import com.switchfully.order.domain.orders.OrderRepository;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 
-import javax.inject.Inject;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
@@ -22,26 +22,20 @@ import static com.switchfully.order.domain.orders.OrderTestBuilder.anOrder;
 import static com.switchfully.order.domain.orders.orderitems.OrderItemTestBuilder.anOrderItem;
 import static org.assertj.core.api.Assertions.assertThat;
 
+@DataJpaTest
 class OrderServiceIntegrationTest extends IntegrationTest {
 
-    @Inject
+    @Autowired
     private OrderService orderService;
 
-    @Inject
+    @Autowired
     private OrderRepository orderRepository;
 
-    @Inject
+    @Autowired
     private CustomerRepository customerRepository;
 
-    @Inject
+    @Autowired
     private ItemRepository itemRepository;
-
-    @AfterEach
-    void resetDatabase() {
-        orderRepository.reset();
-        customerRepository.reset();
-        itemRepository.reset();
-    }
 
     @Test
     void createOrder() {
@@ -50,7 +44,7 @@ class OrderServiceIntegrationTest extends IntegrationTest {
                 .build());
         Customer existingCustomer = customerRepository.save(aCustomer().build());
         Order orderToCreate = anOrder()
-                .withCustomerId(existingCustomer.getId())
+                .withCustomer(existingCustomer)
                 .withOrderItems(anOrderItem()
                         .withItemId(existingItem.getId())
                         .withOrderedAmount(15)
@@ -61,7 +55,7 @@ class OrderServiceIntegrationTest extends IntegrationTest {
 
         assertThat(createdOrder.getId()).isNotNull();
         assertThat(createdOrder).isEqualToComparingFieldByFieldRecursively(orderToCreate);
-        assertThat(itemRepository.get(existingItem.getId()).getAmountOfStock()).isEqualTo(5);
+        assertThat(itemRepository.getOne(existingItem.getId()).getAmountOfStock()).isEqualTo(5);
     }
 
     @Test
@@ -97,13 +91,13 @@ class OrderServiceIntegrationTest extends IntegrationTest {
         Order order1 = orderRepository.save(anOrder()
                 .withOrderItems(anOrderItem().withItemId(existingItem1.getId()).build(),
                         anOrderItem().withItemId(existingItem2.getId()).build())
-                .withCustomerId(existingCustomer1.getId()).build());
+                .withCustomer(existingCustomer1).build());
         Order order2 = orderRepository.save(anOrder()
                 .withOrderItems(anOrderItem().withItemId(existingItem2.getId()).build())
-                .withCustomerId(existingCustomer2.getId()).build());
+                .withCustomer(existingCustomer2).build());
         Order order3 = orderRepository.save(anOrder()
                 .withOrderItems(anOrderItem().withItemId(existingItem1.getId()).build())
-                .withCustomerId(existingCustomer2.getId()).build());
+                .withCustomer(existingCustomer2).build());
 
         List<Order> ordersForCustomer = orderService.getOrdersForCustomer(existingCustomer2.getId());
 
@@ -118,7 +112,7 @@ class OrderServiceIntegrationTest extends IntegrationTest {
                 .withAmountOfStock(12)
                 .build());
         Order originalOrder = orderRepository.save(anOrder()
-                .withCustomerId(customerOfOrder.getId())
+                .withCustomer(customerOfOrder)
                 .withOrderItems(anOrderItem()
                         .withItemId(itemFromOrder.getId())
                         .withItemPrice(Price.create(BigDecimal.valueOf(9.95)))
@@ -131,14 +125,14 @@ class OrderServiceIntegrationTest extends IntegrationTest {
 
         assertThat(orderFromReorder).isNotNull();
         assertThat(orderFromReorder.getTotalPrice().sameAs(Price.create(BigDecimal.valueOf(40.0)))).isTrue();
-        assertThat(orderFromReorder.getCustomerId()).isEqualTo(customerOfOrder.getId());
+        assertThat(orderFromReorder.getCustomer()).isEqualTo(customerOfOrder);
         assertThat(orderFromReorder.getOrderItems()).hasSize(1);
         assertThat(orderFromReorder.getOrderItems().get(0).getShippingDate().isAfter(LocalDate.now().plusDays(2)));
         assertThat(orderFromReorder.getOrderItems().get(0).getOrderedAmount()).isEqualTo(5);
         assertThat(orderFromReorder.getOrderItems().get(0).getTotalPrice().sameAs(Price.create(BigDecimal.valueOf(40.0)))).isTrue();
         assertThat(orderFromReorder.getOrderItems().get(0).getItemPrice().sameAs(Price.create(BigDecimal.valueOf(8.0)))).isTrue();
         assertThat(orderFromReorder.getOrderItems().get(0).getItemId()).isEqualTo(itemFromOrder.getId());
-        assertThat(itemRepository.get(itemFromOrder.getId()).getAmountOfStock()).isEqualTo(2);
+        assertThat(itemRepository.getOne(itemFromOrder.getId()).getAmountOfStock()).isEqualTo(2);
     }
 
 }

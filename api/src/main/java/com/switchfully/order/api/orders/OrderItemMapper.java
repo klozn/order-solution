@@ -18,7 +18,7 @@ import static com.switchfully.order.domain.orders.orderitems.OrderItem.OrderItem
 @Named
 public class OrderItemMapper extends Mapper<ItemGroupDto, OrderItem> {
 
-    private ItemService itemService;
+    private final ItemService itemService;
 
     @Inject
     public OrderItemMapper(ItemService itemService) {

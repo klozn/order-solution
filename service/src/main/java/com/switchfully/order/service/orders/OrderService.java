@@ -7,9 +7,14 @@ import com.switchfully.order.domain.items.ItemRepository;
 import com.switchfully.order.domain.orders.Order;
 import com.switchfully.order.domain.orders.OrderRepository;
 import com.switchfully.order.domain.orders.orderitems.OrderItem;
+import com.switchfully.order.domain.orders.orderitems.events.OrderItemCreatedEvent;
 import com.switchfully.order.infrastructure.exceptions.EntityNotFoundException;
 import com.switchfully.order.infrastructure.exceptions.EntityNotValidException;
 import com.switchfully.order.infrastructure.exceptions.NotAuthorizedException;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -21,41 +26,48 @@ import java.util.stream.Collectors;
 
 import static com.switchfully.order.domain.orders.Order.OrderBuilder.order;
 
-@Named
+@Service
+@Transactional
 public class OrderService {
 
     private final CustomerRepository customerRepository;
     private final ItemRepository itemRepository;
     private final OrderRepository orderRepository;
     private final OrderValidator orderValidator;
+    private final ApplicationEventPublisher eventPublisher;
 
-    @Inject
+    @Autowired
     public OrderService(CustomerRepository customerRepository,
                         ItemRepository itemRepository,
                         OrderRepository orderRepository,
-                        OrderValidator orderValidator) {
+                        OrderValidator orderValidator,
+                        ApplicationEventPublisher eventPublisher) {
         this.customerRepository = customerRepository;
         this.itemRepository = itemRepository;
         this.orderRepository = orderRepository;
         this.orderValidator = orderValidator;
+        this.eventPublisher = eventPublisher;
     }
 
     public Order createOrder(Order order) {
         assertOrderIsValidForCreation(order);
         assertOrderingCustomerExists(order);
         assertAllOrderedItemsExist(order);
+        publishCreationOfOrderItems(order);
         return orderRepository.save(order);
     }
 
     public List<Order> getOrdersForCustomer(UUID customerId) {
-        return orderRepository.getOrdersForCustomer(customerId);
+        Customer customer = customerRepository.getOne(customerId);
+        return orderRepository.findAllByCustomer(customer);
     }
 
     public Order reorderOrder(UUID orderId) {
-        Order orderToReorder = orderRepository.get(orderId);
+        Order orderToReorder = orderRepository.getOne(orderId);
         assertCustomerIsOwnerOfOrderToReorder(orderId, orderToReorder);
+        publishCreationOfOrderItems(orderToReorder);
         return orderRepository.save(order()
-                .withCustomerId(orderToReorder.getCustomerId())
+                .withCustomer(orderToReorder.getCustomer())
                 .withOrderItems(copyOrderItemsWithRecentPrice(orderToReorder.getOrderItems()))
                 .build());
     }
@@ -64,13 +76,17 @@ public class OrderService {
         if (onlyIncludeShippableToday) {
             return getOrdersOnlyContainingOrderItemsShippingToday();
         }
-        return new ArrayList<>(orderRepository.getAll().values());
+        return orderRepository.findAll();
+    }
+
+    private void publishCreationOfOrderItems(Order order) {
+        order.getOrderItems().forEach(orderItem -> eventPublisher.publishEvent(new OrderItemCreatedEvent(orderItem)));
     }
 
     private List<Order> getOrdersOnlyContainingOrderItemsShippingToday() {
-        return orderRepository.getAll().values().stream()
+        return orderRepository.findAll().stream()
                 .map(order -> order()
-                        .withCustomerId(order.getCustomerId())
+                        .withCustomer(order.getCustomer())
                         .withId(order.getId())
                         .withOrderItems(getOrderItemsShippingToday(order))
                         .build())
@@ -92,7 +108,7 @@ public class OrderService {
 
     private boolean doAllOrderItemsReferenceAnExistingItem(List<OrderItem> orderItems) {
         return orderItems.stream()
-                .filter(orderItem -> itemRepository.get(orderItem.getItemId()) == null)
+                .filter(orderItem -> itemRepository.existsById(orderItem.getItemId()))
                 .map(nonExistingItem -> false)
                 .findFirst()
                 .orElse(true);
@@ -101,12 +117,12 @@ public class OrderService {
     private void assertOrderingCustomerExists(Order order) {
         if (!doesCustomerExist(order)) {
             throw new EntityNotFoundException("creation of a new order when checking if the referenced customer exists",
-                    Customer.class, order.getCustomerId());
+                    Customer.class, order.getCustomer().getId());
         }
     }
 
     private boolean doesCustomerExist(Order order) {
-        return customerRepository.get(order.getCustomerId()) != null;
+        return customerRepository.existsById(order.getCustomer().getId());
     }
 
     private void assertOrderIsValidForCreation(Order order) {
@@ -118,7 +134,7 @@ public class OrderService {
     private List<OrderItem> copyOrderItemsWithRecentPrice(List<OrderItem> orderItems) {
         return orderItems.stream()
                 .map(orderItem -> {
-                            Item item = itemRepository.get(orderItem.getItemId());
+                            Item item = itemRepository.getOne(orderItem.getItemId());
                             return OrderItem.OrderItemBuilder.orderItem()
                                     .withItemId(orderItem.getItemId())
                                     .withOrderedAmount(orderItem.getOrderedAmount())
@@ -130,8 +146,8 @@ public class OrderService {
     }
 
     private void assertCustomerIsOwnerOfOrderToReorder(UUID orderId, Order orderToReorder) {
-        if (!doesOrderToReorderBelongToAuthenticatedUser(orderToReorder.getCustomerId())) {
-            throw new NotAuthorizedException("Customer " + orderToReorder.getCustomerId().toString() + " is not allowed " +
+        if (!doesOrderToReorderBelongToAuthenticatedUser(orderToReorder.getCustomer())) {
+            throw new NotAuthorizedException("Customer " + orderToReorder.getCustomer().toString() + " is not allowed " +
                     "to reorder the Order " + orderId.toString() + " because he's not the owner of that order!");
         }
     }
@@ -141,7 +157,7 @@ public class OrderService {
      * id of the authenticated (logged-in) customer. Since Spring Security is out of scope for this solution, therefore,
      * we simply check if the customer exists.
      */
-    private boolean doesOrderToReorderBelongToAuthenticatedUser(UUID customerId) {
-        return customerRepository.get(customerId) != null;
+    private boolean doesOrderToReorderBelongToAuthenticatedUser(Customer customer) {
+        return customerRepository.existsById(customer.getId());
     }
 }

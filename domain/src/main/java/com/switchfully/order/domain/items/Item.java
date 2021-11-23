@@ -1,20 +1,26 @@
 package com.switchfully.order.domain.items;
 
-import com.switchfully.order.domain.Entity;
 import com.switchfully.order.domain.items.prices.Price;
 import com.switchfully.order.infrastructure.builder.Builder;
 
+import javax.persistence.Embedded;
+import javax.persistence.Table;
 import java.util.UUID;
 
-public class Item extends Entity {
+@Table(name = "item")
+public class Item extends com.switchfully.order.domain.Entity {
 
-    private final String name;
-    private final String description;
-    private final Price price;
+    private String name;
+    private String description;
+    @Embedded
+    private Price price;
     private int amountOfStock;
 
+    public Item() {
+    }
+
     public Item(ItemBuilder itemBuilder) {
-        super(itemBuilder.id);
+        super.setId(itemBuilder.id);
         name = itemBuilder.name;
         description = itemBuilder.description;
         price = itemBuilder.price;

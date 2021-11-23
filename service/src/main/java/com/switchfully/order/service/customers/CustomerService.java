@@ -2,20 +2,21 @@ package com.switchfully.order.service.customers;
 
 import com.switchfully.order.domain.customers.Customer;
 import com.switchfully.order.domain.customers.CustomerRepository;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
-import javax.inject.Inject;
-import javax.inject.Named;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-@Named
+@Service
+@Transactional
 public class CustomerService {
 
     private final CustomerRepository customerRepository;
     private final CustomerValidator customerValidator;
 
-    @Inject
+    @Autowired
     public CustomerService(CustomerRepository customerRepository, CustomerValidator customerValidator) {
         this.customerRepository = customerRepository;
         this.customerValidator = customerValidator;
@@ -29,10 +30,10 @@ public class CustomerService {
     }
 
     public List<Customer> getAllCustomers() {
-        return new ArrayList<>(customerRepository.getAll().values());
+        return customerRepository.findAll();
     }
 
     public Customer getCustomer(UUID id) {
-        return customerRepository.get(id);
+        return customerRepository.getOne(id);
     }
 }

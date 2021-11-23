@@ -1,5 +1,7 @@
 package com.switchfully.order.domain.orders;
 
+import com.switchfully.order.domain.customers.Customer;
+import com.switchfully.order.domain.customers.CustomerTestBuilder;
 import com.switchfully.order.domain.orders.Order.OrderBuilder;
 import com.switchfully.order.domain.orders.orderitems.OrderItem;
 import com.switchfully.order.infrastructure.builder.Builder;
@@ -23,7 +25,7 @@ public class OrderTestBuilder extends Builder<Order> {
 
     public static OrderTestBuilder anOrder() {
         return new OrderTestBuilder(OrderBuilder.order()
-        .withCustomerId(UUID.randomUUID())
+        .withCustomer(CustomerTestBuilder.aCustomer().withId(UUID.randomUUID()).build())
         .withOrderItems(Arrays.asList(anOrderItem().build(), anOrderItem().build())));
     }
 
@@ -42,8 +44,8 @@ public class OrderTestBuilder extends Builder<Order> {
         return this;
     }
 
-    public OrderTestBuilder withCustomerId(UUID customerId) {
-        orderBuilder.withCustomerId(customerId);
+    public OrderTestBuilder withCustomer(Customer customer) {
+        orderBuilder.withCustomer(customer);
         return this;
     }
 }

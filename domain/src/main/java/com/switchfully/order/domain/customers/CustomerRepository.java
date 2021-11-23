@@ -1,15 +1,8 @@
 package com.switchfully.order.domain.customers;
 
-import com.switchfully.order.domain.Repository;
+import org.springframework.data.jpa.repository.JpaRepository;
 
-import javax.inject.Inject;
-import javax.inject.Named;
+import java.util.UUID;
 
-@Named
-public class CustomerRepository extends Repository<Customer, CustomerDatabase>{
-
-    @Inject
-    public CustomerRepository(CustomerDatabase database) {
-        super(database);
-    }
+public interface CustomerRepository extends JpaRepository<Customer, UUID> {
 }

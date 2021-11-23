@@ -1,10 +1,15 @@
 package com.switchfully.order.domain.items.prices;
 
+import javax.persistence.Embeddable;
 import java.math.BigDecimal;
 
+@Embeddable
 public final class Price {
 
-    private final BigDecimal amount;
+    private BigDecimal amount;
+
+    public Price() {
+    }
 
     private Price(BigDecimal amount) {
         this.amount = amount;
@@ -14,8 +19,16 @@ public final class Price {
         return new Price(amount);
     }
 
+    public void setAmount(BigDecimal amount) {
+        this.amount = amount;
+    }
+
     public BigDecimal getAmount() {
         return amount;
+    }
+
+    public void setAmountAsFloat(float amountAsFloat) {
+        this.amount = new BigDecimal(amountAsFloat);
     }
 
     public float getAmountAsFloat() {

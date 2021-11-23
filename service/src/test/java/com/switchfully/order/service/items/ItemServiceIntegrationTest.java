@@ -6,6 +6,7 @@ import com.switchfully.order.domain.items.ItemRepository;
 import com.switchfully.order.domain.items.prices.Price;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 
 import javax.inject.Inject;
 import java.math.BigDecimal;
@@ -14,17 +15,13 @@ import java.util.List;
 import static com.switchfully.order.domain.items.ItemTestBuilder.anItem;
 import static org.assertj.core.api.Assertions.assertThat;
 
+@DataJpaTest
 class ItemServiceIntegrationTest extends IntegrationTest {
 
     @Inject
     private ItemService itemService;
 
     @Inject private ItemRepository itemRepository;
-
-    @AfterEach
-    void resetDatabase() {
-        itemRepository.reset();
-    }
 
     @Test
     void createItem() {

@@ -1,23 +1,31 @@
 package com.switchfully.order.domain.customers;
 
-import com.switchfully.order.domain.Entity;
 import com.switchfully.order.domain.customers.addresses.Address;
 import com.switchfully.order.domain.customers.emails.Email;
 import com.switchfully.order.domain.customers.phonenumbers.PhoneNumber;
 import com.switchfully.order.infrastructure.builder.Builder;
 
+import javax.persistence.Embedded;
+import javax.persistence.Table;
 import java.util.UUID;
 
-public class Customer extends Entity {
+@Table(name = "customer")
+public class Customer extends com.switchfully.order.domain.Entity {
 
-    private final String firstname;
-    private final String lastname;
-    private final Email email;
-    private final Address address;
-    private final PhoneNumber phoneNumber;
+    private String firstname;
+    private String lastname;
+    @Embedded
+    private Email email;
+    @Embedded
+    private Address address;
+    @Embedded
+    private PhoneNumber phoneNumber;
+
+    public Customer() {
+    }
 
     private Customer(CustomerBuilder customerBuilder) {
-        super(customerBuilder.id);
+        super.setId(customerBuilder.id);
         this.firstname = customerBuilder.firstname;
         this.lastname = customerBuilder.lastname;
         this.email = customerBuilder.email;

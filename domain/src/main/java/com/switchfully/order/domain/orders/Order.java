@@ -1,32 +1,43 @@
 package com.switchfully.order.domain.orders;
 
-import com.switchfully.order.domain.Entity;
+import com.switchfully.order.domain.customers.Customer;
 import com.switchfully.order.domain.items.prices.Price;
 import com.switchfully.order.domain.orders.orderitems.OrderItem;
 import com.switchfully.order.infrastructure.builder.Builder;
 
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.Table;
+import javax.persistence.Transient;
 import java.math.BigDecimal;
 import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 
-public class Order extends Entity {
+@Table(name = "orders")
+public class Order extends com.switchfully.order.domain.Entity {
 
-    private final List<OrderItem> orderItems;
-    private final UUID customerId;
+    @Transient
+    private List<OrderItem> orderItems;
+    @ManyToOne
+    @JoinColumn(name = "customerId", referencedColumnName = "id")
+    private Customer customer;
+
+    public Order() {
+    }
 
     public Order(OrderBuilder orderBuilder) {
-        super(orderBuilder.id);
+        super.setId(orderBuilder.id);
         orderItems = orderBuilder.orderItems;
-        customerId = orderBuilder.customerId;
+        customer = orderBuilder.customer;
     }
 
     public List<OrderItem> getOrderItems() {
         return Collections.unmodifiableList(orderItems);
     }
 
-    public UUID getCustomerId() {
-        return customerId;
+    public Customer getCustomer() {
+        return customer;
     }
 
     public Price getTotalPrice() {
@@ -41,7 +52,7 @@ public class Order extends Entity {
         return "Order{"
                 + "id=" + getId() +
                 ", orderItems=" + orderItems +
-                ", customerId=" + customerId +
+                ", customerId=" + customer.getId() +
                 '}';
     }
 
@@ -49,7 +60,7 @@ public class Order extends Entity {
 
         private UUID id;
         private List<OrderItem> orderItems;
-        private UUID customerId;
+        private Customer customer;
 
         private OrderBuilder() {
         }
@@ -73,8 +84,8 @@ public class Order extends Entity {
             return this;
         }
 
-        public OrderBuilder withCustomerId(UUID customerId) {
-            this.customerId = customerId;
+        public OrderBuilder withCustomer(Customer customer) {
+            this.customer = customer;
             return this;
         }
     }

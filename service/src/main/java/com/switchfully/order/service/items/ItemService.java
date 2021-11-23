@@ -2,20 +2,22 @@ package com.switchfully.order.service.items;
 
 import com.switchfully.order.domain.items.Item;
 import com.switchfully.order.domain.items.ItemRepository;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
-import javax.inject.Inject;
-import javax.inject.Named;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-@Named
+@Service
+@Transactional
 public class ItemService {
 
     private final ItemRepository itemRepository;
     private final ItemValidator itemValidator;
 
-    @Inject
+    @Autowired
     public ItemService(ItemRepository itemRepository, ItemValidator itemValidator) {
         this.itemRepository = itemRepository;
         this.itemValidator = itemValidator;
@@ -32,20 +34,19 @@ public class ItemService {
         if (!itemValidator.isValidForUpdating(item)) {
             itemValidator.throwInvalidStateException(item, "updating");
         }
-        return itemRepository.update(item);
+        return itemRepository.save(item);
     }
 
     public Item getItem(UUID itemId) {
-        return itemRepository.get(itemId);
+        return itemRepository.getOne(itemId);
     }
 
     public void decrementStockForItem(UUID itemId, int amountToDecrement) {
-        Item item = itemRepository.get(itemId);
+        Item item = itemRepository.getOne(itemId);
         item.decrementStock(amountToDecrement);
-        itemRepository.update(item);
     }
 
     public List<Item> getAllItems() {
-        return new ArrayList<>(itemRepository.getAll().values());
+        return itemRepository.findAll();
     }
 }

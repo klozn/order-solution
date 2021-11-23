@@ -11,7 +11,7 @@ public class ItemEventHandler {
 
     @Named
     public static class OrderItemCreatedEventListener implements ApplicationListener<OrderItemCreatedEvent> {
-        private ItemService itemService;
+        private final ItemService itemService;
 
         @Inject
         public OrderItemCreatedEventListener(ItemService itemService) {

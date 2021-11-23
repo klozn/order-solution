@@ -5,10 +5,16 @@ import com.switchfully.order.api.orders.dtos.OrderCreationDto;
 import com.switchfully.order.api.orders.dtos.OrderDto;
 import com.switchfully.order.api.orders.dtos.reports.OrdersReportDto;
 import com.switchfully.order.service.orders.OrderService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
-import javax.inject.Inject;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -22,7 +28,7 @@ public class OrderController {
     private final OrderService orderService;
     private final OrderMapper orderMapper;
 
-    @Inject
+    @Autowired
     public OrderController(OrderService orderService, OrderMapper orderMapper) {
         this.orderService = orderService;
         this.orderMapper = orderMapper;
@@ -31,7 +37,7 @@ public class OrderController {
     @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
     public List<OrderDto> getAllOrders(@RequestParam(name = "shippableToday", required = false) boolean onlyIncludeShippableToday) {
         return orderService.getAllOrders(onlyIncludeShippableToday).stream()
-                .map(order -> orderMapper.toDto(order))
+                .map(orderMapper::toDto)
                 .collect(Collectors.toList());
     }
 

@@ -5,6 +5,7 @@ import com.switchfully.order.domain.customers.Customer;
 import com.switchfully.order.domain.customers.CustomerRepository;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 
 import javax.inject.Inject;
 import java.util.List;
@@ -12,6 +13,7 @@ import java.util.List;
 import static com.switchfully.order.domain.customers.CustomerTestBuilder.aCustomer;
 import static org.assertj.core.api.Assertions.assertThat;
 
+@DataJpaTest
 class CustomerServiceIntegrationTest extends IntegrationTest{
 
     @Inject
@@ -20,18 +22,13 @@ class CustomerServiceIntegrationTest extends IntegrationTest{
     @Inject
     private CustomerRepository customerRepository;
 
-    @AfterEach
-    void resetDatabase() {
-        customerRepository.reset();
-    }
-
     @Test
     void createCustomer() {
         Customer customerToCreate = aCustomer().build();
 
         Customer createdCustomer = customerService.createCustomer(customerToCreate);
 
-        assertThat(customerRepository.get(customerToCreate.getId()))
+        assertThat(customerRepository.getOne(customerToCreate.getId()))
                 .isEqualToComparingFieldByField(customerToCreate)
                 .isEqualToComparingFieldByField(createdCustomer);
     }

@@ -8,7 +8,7 @@ import org.springframework.context.ApplicationEvent;
  */
 public class OrderItemCreatedEvent extends ApplicationEvent {
 
-    private OrderItem orderItem;
+    private final OrderItem orderItem;
 
     public OrderItemCreatedEvent(OrderItem orderItem) {
         super(orderItem);

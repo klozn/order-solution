@@ -36,7 +36,7 @@ class OrderValidatorTest {
     void isValidForCreation_givenSomeMissingValues_thenNotValidForCreation() {
         assertThat(new OrderValidator()
                 .isValidForCreation(anOrder()
-                        .withCustomerId(null)
+                        .withCustomer(null)
                         .withOrderItems(OrderItemTestBuilder.anOrderItem()
                                 .withItemPrice(null)
                                 .withOrderedAmount(0)

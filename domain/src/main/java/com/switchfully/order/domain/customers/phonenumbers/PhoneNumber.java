@@ -2,14 +2,28 @@ package com.switchfully.order.domain.customers.phonenumbers;
 
 import com.switchfully.order.infrastructure.builder.Builder;
 
+import javax.persistence.Embeddable;
+
+@Embeddable
 public final class PhoneNumber {
 
-    private final String number;
-    private final String countryCallingCode;
+    private String number;
+    private String countryCallingCode;
+
+    public PhoneNumber() {
+    }
 
     private PhoneNumber(PhoneNumberBuilder phoneNumberBuilder) {
         this.number = phoneNumberBuilder.number;
         this.countryCallingCode = phoneNumberBuilder.countryCallingCode;
+    }
+
+    public void setNumber(String number) {
+        this.number = number;
+    }
+
+    public void setCountryCallingCode(String countryCallingCode) {
+        this.countryCallingCode = countryCallingCode;
     }
 
     public String getNumber() {

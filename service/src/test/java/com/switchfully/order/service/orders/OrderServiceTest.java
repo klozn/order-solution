@@ -1,5 +1,6 @@
 package com.switchfully.order.service.orders;
 
+import com.switchfully.order.domain.customers.Customer;
 import com.switchfully.order.domain.customers.CustomerRepository;
 import com.switchfully.order.domain.items.ItemRepository;
 import com.switchfully.order.domain.orders.Order;
@@ -11,6 +12,7 @@ import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
+import org.springframework.context.ApplicationEventPublisher;
 
 import java.util.UUID;
 
@@ -28,6 +30,7 @@ class OrderServiceTest {
     private OrderRepository orderRepositoryMock;
     private CustomerRepository customerRepositoryMock;
     private ItemRepository itemRepositoryMock;
+    private ApplicationEventPublisher eventPublisherMock;
 
     @BeforeEach
     void setupService() {
@@ -35,7 +38,8 @@ class OrderServiceTest {
         orderValidatorMock = Mockito.mock(OrderValidator.class);
         customerRepositoryMock = Mockito.mock(CustomerRepository.class);
         itemRepositoryMock = Mockito.mock(ItemRepository.class);
-        orderService = new OrderService(customerRepositoryMock, itemRepositoryMock, orderRepositoryMock, orderValidatorMock);
+        eventPublisherMock = Mockito.mock(ApplicationEventPublisher.class);
+        orderService = new OrderService(customerRepositoryMock, itemRepositoryMock, orderRepositoryMock, orderValidatorMock, eventPublisherMock);
     }
 
     @Test
@@ -43,8 +47,8 @@ class OrderServiceTest {
         Order order = anOrder().build();
         Mockito.when(orderValidatorMock.isValidForCreation(order)).thenReturn(true);
         Mockito.when(orderRepositoryMock.save(order)).thenReturn(order);
-        Mockito.when(customerRepositoryMock.get(any(UUID.class))).thenReturn(aCustomer().build());
-        Mockito.when(itemRepositoryMock.get(any(UUID.class))).thenReturn(anItem().build());
+        Mockito.when(customerRepositoryMock.getOne(any(UUID.class))).thenReturn(aCustomer().build());
+        Mockito.when(itemRepositoryMock.getOne(any(UUID.class))).thenReturn(anItem().build());
 
         Order createdOrder = orderService.createOrder(order);
 
@@ -64,16 +68,16 @@ class OrderServiceTest {
 
     @Test
     void createOrder_customerDoesNotExist() {
-        UUID customerId = UUID.randomUUID();
-        Order order = anOrder().withCustomerId(customerId).build();
+        Customer customer = aCustomer().build();
+        Order order = anOrder().withCustomer(customer).build();
         Mockito.when(orderValidatorMock.isValidForCreation(order)).thenReturn(true);
         Mockito.when(orderRepositoryMock.save(order)).thenReturn(order);
-        Mockito.when(customerRepositoryMock.get(customerId)).thenReturn(null);
+        Mockito.when(customerRepositoryMock.getOne(customer.getId())).thenReturn(null);
 
         Assertions.assertThatExceptionOfType(EntityNotFoundException.class)
                 .isThrownBy(() -> orderService.createOrder(order))
                 .withMessage("During creation of a new order when checking if the referenced " +
-                        "customer exists, the following entity was not found: Customer with id = " + customerId.toString());
+                        "customer exists, the following entity was not found: Customer with id = " + customer.getId().toString());
     }
 
     @Test
@@ -81,8 +85,8 @@ class OrderServiceTest {
         Order order = anOrder().withOrderItems(anOrderItem().withItemId(UUID.randomUUID()).build()).build();
         Mockito.when(orderValidatorMock.isValidForCreation(order)).thenReturn(true);
         Mockito.when(orderRepositoryMock.save(order)).thenReturn(order);
-        Mockito.when(customerRepositoryMock.get(any(UUID.class))).thenReturn(aCustomer().build());
-        Mockito.when(itemRepositoryMock.get(any(UUID.class))).thenReturn(null);
+        Mockito.when(customerRepositoryMock.getOne(any(UUID.class))).thenReturn(aCustomer().build());
+        Mockito.when(itemRepositoryMock.getOne(any(UUID.class))).thenReturn(null);
 
         Assertions.assertThatExceptionOfType(EntityNotValidException.class)
                 .isThrownBy(() -> orderService.createOrder(order))
@@ -93,17 +97,17 @@ class OrderServiceTest {
     @Test
     void reorderOrder() {
         UUID originalOrderId = UUID.randomUUID();
-        UUID customerId = UUID.randomUUID();
+        Customer customer = aCustomer().build();
         UUID itemId = UUID.randomUUID();
-        Mockito.when(orderRepositoryMock.get(originalOrderId))
+        Mockito.when(orderRepositoryMock.getOne(originalOrderId))
                 .thenReturn(anOrder()
-                        .withCustomerId(customerId)
+                        .withCustomer(customer)
                         .withOrderItems(anOrderItem()
                                 .withItemId(itemId)
                                 .build())
                         .build());
-        Mockito.when(customerRepositoryMock.get(customerId)).thenReturn(aCustomer().build());
-        Mockito.when(itemRepositoryMock.get(itemId)).thenReturn(anItem().build());
+        Mockito.when(customerRepositoryMock.getOne(customer.getId())).thenReturn(aCustomer().build());
+        Mockito.when(itemRepositoryMock.getOne(itemId)).thenReturn(anItem().build());
         Order expectedOrder = anOrder().build();
         Mockito.when(orderRepositoryMock.save(any(Order.class))).thenReturn(expectedOrder);
 
@@ -115,15 +119,15 @@ class OrderServiceTest {
     @Test
     void reorderOrder_givenAnInvalidCustomer_thenThrowException() {
         UUID originalOrderId = UUID.randomUUID();
-        UUID customerId = UUID.randomUUID();
-        Mockito.when(orderRepositoryMock.get(originalOrderId))
-                .thenReturn(anOrder().withCustomerId(customerId).build());
-        Mockito.when(customerRepositoryMock.get(customerId)).thenReturn(null);
+        Customer customer = aCustomer().build();
+        Mockito.when(orderRepositoryMock.getOne(originalOrderId))
+                .thenReturn(anOrder().withCustomer(customer).build());
+        Mockito.when(customerRepositoryMock.getOne(customer.getId())).thenReturn(null);
 
         Assertions.assertThatExceptionOfType(NotAuthorizedException.class)
                 .isThrownBy(() -> orderService.reorderOrder(originalOrderId))
-                .withMessage("Customer " + customerId.toString() + " is not allowed to reorder the " +
-                        "Order " + originalOrderId.toString() + " because he's not the owner of that order!");
+                .withMessage("Customer " + customer + " is not allowed to reorder the " +
+                        "Order " + originalOrderId + " because he's not the owner of that order!");
     }
 
 }
