@@ -10,26 +10,25 @@ import com.switchfully.order.domain.customers.CustomerRepository;
 import com.switchfully.order.domain.customers.CustomerTestBuilder;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.http.HttpStatus;
+import org.springframework.test.annotation.DirtiesContext;
 
 import javax.inject.Inject;
 
 import static java.lang.String.format;
 import static org.assertj.core.api.Assertions.assertThat;
 
+@DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
 class CustomerControllerIntegrationTest extends ControllerIntegrationTest {
 
-    @Inject
+    @Autowired
     private CustomerRepository customerRepository;
 
-    @Inject
+    @Autowired
     private CustomerMapper customerMapper;
-
-    @AfterEach
-    void resetDatabase() {
-        customerRepository.reset();
-    }
 
     @Test
     void createCustomer() {

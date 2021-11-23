@@ -8,6 +8,7 @@ import com.switchfully.order.api.orders.dtos.OrderCreationDto;
 import com.switchfully.order.api.orders.dtos.OrderDto;
 import com.switchfully.order.api.orders.dtos.reports.ItemGroupReportDto;
 import com.switchfully.order.api.orders.dtos.reports.OrdersReportDto;
+import com.switchfully.order.domain.customers.Customer;
 import com.switchfully.order.domain.customers.addresses.Address;
 import com.switchfully.order.domain.items.prices.Price;
 import com.switchfully.order.domain.orders.Order;
@@ -61,17 +62,17 @@ class OrderMapperTest {
                                 .withOrderedAmount(1)));
 
         assertThat(order).isNotNull();
-        assertThat(order.getCustomerId().toString()).isEqualTo(customerId);
+        assertThat(order.getCustomer().getId().toString()).isEqualTo(customerId);
         assertThat(order.getOrderItems()).containsExactlyInAnyOrder(orderItem, orderItem);
     }
 
     @Test
     void toDto() {
-        UUID customerId = UUID.randomUUID();
+        Customer customer = aCustomer().withId(UUID.randomUUID()).build();
         UUID orderId = UUID.randomUUID();
-        Order order = anOrder().withCustomerId(customerId).withId(orderId).build();
+        Order order = anOrder().withCustomer(customer).withId(orderId).build();
         Address address = anAddress().build();
-        when(customerService.getCustomer(customerId))
+        when(customerService.getCustomer(customer.getId()))
                 .thenReturn(aCustomer()
                         .withAddress(address)
                         .build());

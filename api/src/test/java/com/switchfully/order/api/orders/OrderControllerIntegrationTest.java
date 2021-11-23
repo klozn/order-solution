@@ -39,13 +39,6 @@ class OrderControllerIntegrationTest extends ControllerIntegrationTest {
     @Inject
     private OrderRepository orderRepository;
 
-    @AfterEach
-    void resetDatabase() {
-        customerRepository.reset();
-        itemRepository.reset();
-        orderRepository.reset();
-    }
-
     @Test
     void createOrder() {
         Customer customer = customerRepository.save(aCustomer().build());
@@ -87,10 +80,10 @@ class OrderControllerIntegrationTest extends ControllerIntegrationTest {
         orderRepository.save(anOrder()
                 .withOrderItems(anOrderItem().withItemId(existingItem1.getId()).build(),
                         anOrderItem().withItemId(existingItem2.getId()).build())
-                .withCustomerId(existingCustomer1.getId()).build());
+                .withCustomer(existingCustomer1).build());
         orderRepository.save(anOrder()
                 .withOrderItems(anOrderItem().withItemId(existingItem2.getId()).build())
-                .withCustomerId(existingCustomer1.getId()).build());
+                .withCustomer(existingCustomer1).build());
 
         OrderDto[] orders = new TestRestTemplate()
                 .getForObject(format("http://localhost:%s/%s?shippableToday=true", getPort(),
@@ -109,7 +102,7 @@ class OrderControllerIntegrationTest extends ControllerIntegrationTest {
                 .withPrice(Price.create(BigDecimal.valueOf(10)))
                 .build());
         Order order = orderRepository.save(anOrder()
-                .withCustomerId(customer.getId())
+                .withCustomer(customer)
                 .withOrderItems(anOrderItem()
                         .withShippingDateBasedOnAvailableItemStock(itemOne.getAmountOfStock())
                         .withOrderedAmount(6)
@@ -125,7 +118,7 @@ class OrderControllerIntegrationTest extends ControllerIntegrationTest {
         assertThat(orderAfterCreationDto).isNotNull();
         assertThat(orderAfterCreationDto.getOrderId()).isNotNull().isNotEmpty().isNotEqualTo(order.getId());
         assertThat(orderAfterCreationDto.getTotalPrice()).isEqualTo(60.0f);
-        assertThat(orderRepository.get(UUID.fromString(orderAfterCreationDto.getOrderId()))).isNotNull();
+        assertThat(orderRepository.getOne(UUID.fromString(orderAfterCreationDto.getOrderId()))).isNotNull();
 
     }
 
@@ -137,10 +130,10 @@ class OrderControllerIntegrationTest extends ControllerIntegrationTest {
         Order order1 = orderRepository.save(anOrder()
                 .withOrderItems(anOrderItem().withItemId(existingItem1.getId()).build(),
                         anOrderItem().withItemId(existingItem2.getId()).build())
-                .withCustomerId(existingCustomer1.getId()).build());
+                .withCustomer(existingCustomer1).build());
         Order order2 = orderRepository.save(anOrder()
                 .withOrderItems(anOrderItem().withItemId(existingItem2.getId()).build())
-                .withCustomerId(existingCustomer1.getId()).build());
+                .withCustomer(existingCustomer1).build());
 
         OrdersReportDto ordersReportDto = new TestRestTemplate()
                 .getForObject(format("http://localhost:%s/%s/%s/%s", getPort(), OrderController.RESOURCE_NAME,

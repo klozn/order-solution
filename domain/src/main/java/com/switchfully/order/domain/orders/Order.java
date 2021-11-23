@@ -5,6 +5,7 @@ import com.switchfully.order.domain.items.prices.Price;
 import com.switchfully.order.domain.orders.orderitems.OrderItem;
 import com.switchfully.order.infrastructure.builder.Builder;
 
+import javax.persistence.Entity;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
@@ -14,6 +15,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 
+@Entity
 @Table(name = "orders")
 public class Order extends com.switchfully.order.domain.Entity {
 

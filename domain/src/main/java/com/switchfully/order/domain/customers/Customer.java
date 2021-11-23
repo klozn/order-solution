@@ -6,9 +6,11 @@ import com.switchfully.order.domain.customers.phonenumbers.PhoneNumber;
 import com.switchfully.order.infrastructure.builder.Builder;
 
 import javax.persistence.Embedded;
+import javax.persistence.Entity;
 import javax.persistence.Table;
 import java.util.UUID;
 
+@Entity
 @Table(name = "customer")
 public class Customer extends com.switchfully.order.domain.Entity {
 

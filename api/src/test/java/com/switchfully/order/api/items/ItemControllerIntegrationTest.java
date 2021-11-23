@@ -4,32 +4,28 @@ import com.switchfully.order.ControllerIntegrationTest;
 import com.switchfully.order.domain.items.Item;
 import com.switchfully.order.domain.items.ItemRepository;
 import com.switchfully.order.domain.items.prices.Price;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
+import org.springframework.test.annotation.DirtiesContext;
 
-import javax.inject.Inject;
 import java.math.BigDecimal;
 
 import static com.switchfully.order.domain.items.ItemTestBuilder.anItem;
 import static java.lang.String.format;
 import static org.assertj.core.api.Assertions.assertThat;
 
+@DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
 class ItemControllerIntegrationTest extends ControllerIntegrationTest {
 
-    @Inject
+    @Autowired
     private ItemRepository itemRepository;
 
-    @Inject
+    @Autowired
     private ItemMapper itemMapper;
-
-    @AfterEach
-    void resetDatabase() {
-        itemRepository.reset();
-    }
 
     @Test
     void createItem() {

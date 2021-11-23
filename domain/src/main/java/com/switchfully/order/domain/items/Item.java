@@ -4,9 +4,11 @@ import com.switchfully.order.domain.items.prices.Price;
 import com.switchfully.order.infrastructure.builder.Builder;
 
 import javax.persistence.Embedded;
+import javax.persistence.Entity;
 import javax.persistence.Table;
 import java.util.UUID;
 
+@Entity
 @Table(name = "item")
 public class Item extends com.switchfully.order.domain.Entity {
 
