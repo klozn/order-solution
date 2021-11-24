@@ -108,7 +108,7 @@ public class OrderService {
 
     private boolean doAllOrderItemsReferenceAnExistingItem(List<OrderItem> orderItems) {
         return orderItems.stream()
-                .filter(orderItem -> itemRepository.existsById(orderItem.getItemId()))
+                .filter(orderItem -> !itemRepository.existsById(orderItem.getItemId()))
                 .map(nonExistingItem -> false)
                 .findFirst()
                 .orElse(true);

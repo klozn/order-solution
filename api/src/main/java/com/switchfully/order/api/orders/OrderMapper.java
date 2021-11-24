@@ -46,6 +46,7 @@ public class OrderMapper {
     }
 
     public Order toDomain(OrderCreationDto orderCreationDto) {
+        System.out.println("here");
         Customer customer = customerService.getCustomer(UUID.fromString(orderCreationDto.getCustomerId()));
         return order()
                 .withCustomer(customer)

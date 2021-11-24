@@ -5,9 +5,12 @@ import com.switchfully.order.domain.items.prices.Price;
 import com.switchfully.order.domain.orders.orderitems.OrderItem;
 import com.switchfully.order.infrastructure.builder.Builder;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import javax.persistence.Transient;
 import java.math.BigDecimal;
@@ -19,7 +22,8 @@ import java.util.UUID;
 @Table(name = "orders")
 public class Order extends com.switchfully.order.domain.Entity {
 
-    @Transient
+    @OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.PERSIST)
+    @JoinColumn(name = "order_id")
     private List<OrderItem> orderItems;
     @ManyToOne
     @JoinColumn(name = "customerId", referencedColumnName = "id")

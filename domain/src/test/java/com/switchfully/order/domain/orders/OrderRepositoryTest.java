@@ -25,13 +25,16 @@ class OrderRepositoryTest {
     @Autowired
     private OrderRepository orderRepository;
 
+    @Autowired
+    private CustomerRepository customerRepository;
+
     @Test
     void getOrdersForCustomer()  {
         Customer customer = CustomerTestBuilder.aCustomer().withId(UUID.randomUUID()).build();
         Order order1 = anOrder().withCustomer(customer).withId(UUID.randomUUID()).build();
         Order order2 = anOrder().withCustomer(CustomerTestBuilder.anEmptyCustomer().build()).withId(UUID.randomUUID()).build();
         Order order3 = anOrder().withCustomer(customer).withId(UUID.randomUUID()).build();
-
+        //customerRepository.save(customer);
         orderRepository.save(order1);
         orderRepository.save(order2);
         orderRepository.save(order3);

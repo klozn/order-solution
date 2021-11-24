@@ -3,6 +3,8 @@ package com.switchfully.order.domain.orders.orderitems;
 import com.switchfully.order.domain.items.prices.Price;
 import com.switchfully.order.infrastructure.builder.Builder;
 
+import javax.persistence.Entity;
+import javax.persistence.Table;
 import java.math.BigDecimal;
 import java.time.Clock;
 import java.time.LocalDate;
@@ -13,12 +15,17 @@ import java.util.UUID;
  * OrderItem is a fabricated (value) object consisting of the original Item's id and price, enriched with
  * order-specific information (the ordered amount and the shipping date).
  */
-public final class OrderItem {
+@Entity
+@Table(name = "order_item")
+public final class OrderItem extends com.switchfully.order.domain.Entity {
 
-    private final UUID itemId;
-    private final Price itemPrice;
-    private final int orderedAmount;
-    private final LocalDate shippingDate;
+    private UUID itemId;
+    private Price itemPrice;
+    private int orderedAmount;
+    private LocalDate shippingDate;
+
+    public OrderItem() {
+    }
 
     public OrderItem(OrderItemBuilder orderItemBuilder, Clock clock) {
         itemId = orderItemBuilder.itemId;
