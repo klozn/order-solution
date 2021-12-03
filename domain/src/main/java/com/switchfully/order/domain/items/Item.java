@@ -114,8 +114,17 @@ public class Item extends com.switchfully.order.domain.Entity {
     }
 
     public enum StockUrgency {
-        STOCK_LOW,
-        STOCK_MEDIUM,
-        STOCK_HIGH;
+        STOCK_LOW("LOW"),
+        STOCK_MEDIUM("MEDIUM"),
+        STOCK_HIGH("HIGH");
+
+        private final String textualRepresentation;
+        StockUrgency(String textualRepresentation) {
+            this.textualRepresentation = textualRepresentation;
+        }
+
+        public String getTextualRepresentation() {
+            return textualRepresentation;
+        }
     }
 }

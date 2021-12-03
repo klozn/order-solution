@@ -10,6 +10,7 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 @RestController
+@CrossOrigin
 @RequestMapping(path = "/" + CustomerController.RESOURCE_NAME)
 public class CustomerController {
 

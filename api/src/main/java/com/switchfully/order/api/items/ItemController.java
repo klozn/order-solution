@@ -2,6 +2,7 @@ package com.switchfully.order.api.items;
 
 import com.switchfully.order.domain.items.Item.StockUrgency;
 import com.switchfully.order.service.items.ItemService;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 
@@ -12,6 +13,7 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 @RestController
+@CrossOrigin
 @RequestMapping(path = "/" + ItemController.RESOURCE_NAME)
 public class ItemController {
 
@@ -58,6 +60,13 @@ public class ItemController {
         } else {
             return allItems;
         }
+    }
+
+    @GetMapping(path = "/{itemId}", produces = MediaType.APPLICATION_JSON_VALUE)
+    private ItemDto getItem(@PathVariable String itemId) {
+        return itemMapper.toDto(
+                itemService.getItem(UUID.fromString(itemId))
+        );
     }
 
 }
